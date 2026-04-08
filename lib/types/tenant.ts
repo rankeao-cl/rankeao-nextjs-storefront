@@ -56,6 +56,8 @@ export interface TenantSchedule {
 export interface TenantStorefrontConfig {
   carousel_images?: CarouselSlide[];
   category_tiles?: CategoryTile[];
+  community_images?: CategoryTile[];
+  menu_items?: TenantMenuItem[];
   whatsapp_number?: string;
   contact_email?: string;
   google_maps_url?: string;
@@ -64,6 +66,24 @@ export interface TenantStorefrontConfig {
   about_html?: string;
   terms_html?: string;
   promo_bar_text?: string;
+}
+
+export interface TenantMenuSubItem {
+  name: string;
+  href: string;
+}
+
+export interface TenantMegaColumn {
+  title: string;
+  items: TenantMenuSubItem[];
+}
+
+export interface TenantMenuItem {
+  label: string;
+  href: string;
+  type: "mega" | "dropdown" | "link";
+  columns?: TenantMegaColumn[];
+  items?: TenantMenuSubItem[];
 }
 
 export interface CarouselSlide {
