@@ -106,6 +106,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   const primaryColor = tenant.primary_color || "#C52828";
   const secondaryColor = tenant.secondary_color || "#ffffff";
+  console.log("[v0] Tenant colors:", { slug: tenant.slug, primaryColor: tenant.primary_color, resolved: primaryColor });
 
   return (
     <html lang="es" suppressHydrationWarning>
