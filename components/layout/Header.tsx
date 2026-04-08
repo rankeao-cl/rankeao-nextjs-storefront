@@ -184,7 +184,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={`sticky top-0 z-50 ${isHome ? "bg-transparent absolute left-0 right-0 bg-gradient-to-b from-black via-black/60 to-transparent pb-6" : "bg-gray-900"}`}>
+      <header className={`sticky top-0 z-50 ${isHome ? "bg-transparent absolute left-0 right-0 bg-gradient-to-b from-black via-black/60 to-transparent pb-6" : "bg-[var(--header-bg)]"}`}>
         {/* Promo bar */}
         {!promoDismissed && (
           <PromoBar text={promoText} onDismiss={() => setPromoDismissed(true)} />

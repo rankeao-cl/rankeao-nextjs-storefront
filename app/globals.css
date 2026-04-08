@@ -31,7 +31,7 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --store-primary: #C52828;
+  --store-primary: #2563EB;
   --store-secondary: #ffffff;
   --store-primary-light: color-mix(in srgb, var(--store-primary) 8%, transparent);
   --store-primary-medium: color-mix(in srgb, var(--store-primary) 15%, transparent);
@@ -73,6 +73,10 @@
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
   --shadow-card-hover: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
   --shadow-elevated: 0 20px 60px -12px rgba(0,0,0,0.15);
+
+  /* Layout colors */
+  --header-bg: #111827;
+  --footer-bg: #030712;
 }
 
 .dark,
@@ -115,6 +119,10 @@
   --shadow-card: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
   --shadow-card-hover: 0 8px 32px rgba(0,0,0,0.10);
   --shadow-elevated: 0 16px 48px -8px rgba(0,0,0,0.12);
+
+  /* Layout colors */
+  --header-bg: #111827;
+  --footer-bg: #030712;
 }
 
 body {

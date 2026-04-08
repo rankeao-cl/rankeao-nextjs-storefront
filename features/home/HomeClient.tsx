@@ -100,22 +100,33 @@ export default function HomeClient() {
         />
       </div>
 
-      {/* COMMUNITY GALLERY */}
-      <div className="store-container py-6">
-        <div className="grid grid-cols-3 gap-2">
+      {/* CATEGORY GALLERY */}
+      <section className="store-container py-10 md:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           {(tenant.config?.community_images || categoryTiles).map((img, i) => (
-            <div key={i} className="relative aspect-[4/3] rounded-md overflow-hidden group">
+            <Link
+              key={i}
+              href={img.link_url || "/catalogo"}
+              className="relative aspect-[16/9] sm:aspect-[4/3] rounded-xl overflow-hidden group shadow-md hover:shadow-xl transition-shadow duration-300"
+            >
               <Image
                 src={img.image_url}
                 alt={img.title || ""}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
-                sizes="33vw"
+                sizes="(max-width: 640px) 100vw, 33vw"
               />
-            </div>
+              {img.title && (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+                  <span className="text-white font-semibold text-sm md:text-base drop-shadow-lg">
+                    {img.title}
+                  </span>
+                </div>
+              )}
+            </Link>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* OFERTAS */}
       <ProductSection
@@ -154,39 +165,55 @@ function ProductSection({ title, loading, products, onAddToCart, viewAllHref }: 
 }) {
   if (loading) {
     return (
-      <div className="store-container py-8 md:py-12">
-        <div className="h-6 w-64 bg-gray-200 rounded mx-auto mb-8 skeleton-shimmer" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      <section className="store-container py-10 md:py-16">
+        <div className="h-6 w-64 bg-gray-200 rounded mx-auto mb-10 skeleton-shimmer" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
           {[1,2,3,4,5].map(i => (
-            <div key={i}>
-              <div className="aspect-square bg-gray-100 rounded skeleton-shimmer mb-3" />
+            <div key={i} className="bg-white rounded-xl p-3 shadow-sm">
+              <div className="aspect-square bg-gray-100 rounded-lg skeleton-shimmer mb-3" />
               <div className="h-3 bg-gray-100 rounded w-3/4 mx-auto skeleton-shimmer mb-2" />
               <div className="h-4 bg-gray-100 rounded w-1/3 mx-auto skeleton-shimmer mb-3" />
-              <div className="h-8 bg-gray-100 rounded skeleton-shimmer" />
+              <div className="h-9 bg-gray-100 rounded-lg skeleton-shimmer" />
             </div>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   if (!products || products.length === 0) return null;
 
   return (
-    <div className="store-container py-8 md:py-12">
-      {/* Section title - centered, bold uppercase like bluecard */}
-      <h2 className="text-center text-base md:text-lg font-bold text-gray-900 uppercase tracking-wider mb-8 underline underline-offset-8 decoration-2">
-        {title}
-      </h2>
+    <section className="store-container py-10 md:py-16">
+      {/* Section header with title and optional "Ver todos" link */}
+      <div className="flex items-center justify-between mb-8 md:mb-10">
+        <div className="flex-1">
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 uppercase tracking-wide relative inline-block">
+            {title}
+            <span className="absolute -bottom-2 left-0 w-12 h-1 bg-[var(--store-primary)] rounded-full" />
+          </h2>
+        </div>
+        {viewAllHref && (
+          <Link
+            href={viewAllHref}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-[var(--store-primary)] transition-colors"
+          >
+            Ver todos
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        )}
+      </div>
 
       <ProductCarousel products={products} onAddToCart={onAddToCart} />
 
       {/* Mobile "Ver todos" link */}
       {viewAllHref && (
-        <div className="sm:hidden mt-4 text-center">
+        <div className="sm:hidden mt-6 text-center">
           <Link
             href={viewAllHref}
-            className="btn-press inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--store-primary)] bg-[var(--store-primary)]/[0.08] px-5 py-2.5 rounded-lg"
+            className="btn-press inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--store-primary)] bg-[var(--store-primary)]/10 px-6 py-3 rounded-full hover:bg-[var(--store-primary)]/20 transition-colors"
           >
             Ver todos los productos
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,6 +222,6 @@ function ProductSection({ title, loading, products, onAddToCart, viewAllHref }: 
           </Link>
         </div>
       )}
-    </div>
+    </section>
   );
 }

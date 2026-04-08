@@ -9,9 +9,9 @@ export default function Footer() {
   const config = tenant.config;
 
   return (
-    <footer className="bg-gray-950 mt-auto">
+    <footer className="bg-[var(--footer-bg)] mt-auto border-t border-white/5">
       {/* Upper footer - main content */}
-      <div className="store-container pt-12 pb-8">
+      <div className="store-container pt-14 pb-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Column 1: Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
@@ -20,23 +20,23 @@ export default function Footer() {
               alt={tenant.name}
               width={180}
               height={70}
-              className="h-12 w-auto object-contain mb-4"
+              className="h-14 w-auto object-contain mb-5"
             />
             {tenant.description && (
-              <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-xs">
+              <p className="text-white/50 text-sm leading-relaxed mb-5 max-w-xs">
                 {tenant.description}
               </p>
             )}
             {/* Social links inline */}
             {tenant.social_links && tenant.social_links.length > 0 && (
-              <div className="flex gap-3 mt-3">
+              <div className="flex gap-2.5">
                 {tenant.social_links.map((link) => (
                   <a
                     key={link.platform}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-[var(--store-primary)] text-white/60 hover:text-white flex items-center justify-center transition-all duration-200"
+                    className="w-10 h-10 rounded-xl bg-white/[0.06] hover:bg-[var(--store-primary)] text-white/50 hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-105"
                     aria-label={link.platform}
                   >
                     {link.platform.toUpperCase() === "FACEBOOK" && (

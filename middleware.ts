@@ -12,8 +12,8 @@ export function middleware(request: NextRequest) {
   if (hostname.endsWith(`.${STOREFRONT_DOMAIN}`)) {
     tenantSlug = hostname.replace(`.${STOREFRONT_DOMAIN}`, "").split(":")[0];
   } else if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
-    // Dev: use query param or default
-    tenantSlug = request.nextUrl.searchParams.get("tenant") || "calabozo";
+    // Dev: use query param or default to rankeao (main storefront)
+    tenantSlug = request.nextUrl.searchParams.get("tenant") || "rankeao";
   } else {
     // Custom domain: resolve via header or fallback
     tenantSlug = request.nextUrl.searchParams.get("tenant") || "";
