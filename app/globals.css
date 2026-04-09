@@ -2,6 +2,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @import "@heroui/styles";
 
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback', system-ui, -apple-system, sans-serif;
+}
+
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -170,29 +174,50 @@ body {
   .store-container { padding-inline: 2rem; }
 }
 
-/* ── Section title ── */
+/* ── Apple-style Section Title ── */
 
 .section-title {
   color: var(--foreground);
-  font-weight: 800;
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
-  line-height: 1.1;
+  font-weight: 700;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
 }
 
-/* ── Surface card (used for product cards in light theme) ── */
+.section-subtitle {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.5;
+  max-width: 42ch;
+}
+
+/* ── Apple-style Surface card ── */
 
 .surface-card {
   background: var(--surface-solid);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: var(--card-radius);
+  box-shadow: none;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .surface-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-8px);
+}
+
+/* Card with subtle border (for grid layouts) */
+.surface-card-bordered {
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.surface-card-bordered:hover {
+  border-color: var(--store-primary);
+  box-shadow: 0 0 0 1px var(--store-primary);
 }
 
 /* ── Glass morphism ── */
@@ -355,6 +380,173 @@ body {
 
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Apple-style Hero Section ── */
+
+.hero-section {
+  position: relative;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, var(--background) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+  padding: 2rem;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--foreground);
+}
+
+.hero-subtitle {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  color: var(--muted);
+  margin-top: 1.5rem;
+  line-height: 1.5;
+  max-width: 50ch;
+  margin-inline: auto;
+}
+
+/* ── Apple-style Glass Header ── */
+
+.header-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .header-glass,
+[data-theme="dark"] .header-glass {
+  background: rgba(0, 0, 0, 0.72);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Apple-style Buttons ── */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 980px;
+  background: var(--store-primary);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--store-primary) 85%, black);
+  transform: scale(1.02);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 980px;
+  background: transparent;
+  color: var(--store-primary);
+  border: 1.5px solid var(--store-primary);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--store-primary);
+  color: white;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* ── Apple-style Links ── */
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 500;
+  color: var(--store-primary);
+  transition: gap 0.25s ease;
+}
+
+.link-arrow:hover {
+  gap: 0.625rem;
+}
+
+.link-arrow svg {
+  transition: transform 0.25s ease;
+}
+
+.link-arrow:hover svg {
+  transform: translateX(2px);
+}
+
+/* ── Product Image Container ── */
+
+.product-image-container {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--surface-tertiary);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 1rem;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-image-container:hover img {
+  transform: scale(1.05);
+}
+
+/* ── Text utilities ── */
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
 }
 
 /* ── Reduced motion ── */

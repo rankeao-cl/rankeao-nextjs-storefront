@@ -1,19 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import "./globals.css";
-import { Providers } from "./providers";
-import { getTenant } from "@/lib/api/tenant";
-import { buildOrganizationJsonLd, buildLocalBusinessJsonLd, buildWebSiteJsonLd } from "@/lib/seo/json-ld";
-import JsonLd from "@/components/seo/JsonLd";
-import type { Tenant } from "@/lib/types/tenant";
+import { Inter } from "next/font/google";
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
-  variable: "--font-poppins",
+  variable: "--font-inter",
   preload: true,
 });
 
@@ -100,7 +91,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }}
           />
         </head>
-        <body className={`${poppins.variable} antialiased min-h-screen flex flex-col`} style={{ background: "var(--background)", color: "var(--foreground)" }}>
+        <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`} style={{ background: "var(--background)", color: "var(--foreground)" }}>
           {children}
         </body>
       </html>

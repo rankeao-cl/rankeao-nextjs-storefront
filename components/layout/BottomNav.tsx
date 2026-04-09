@@ -2,15 +2,48 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Magnifier, ShoppingCart, Person } from "@gravity-ui/icons";
+import { motion } from "framer-motion";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
+// Custom minimal icons
+function IconHome({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+    </svg>
+  );
+}
+
+function IconSearch({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+  );
+}
+
+function IconBag({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+    </svg>
+  );
+}
+
+function IconUser({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS = [
-  { href: "/", icon: House, label: "Inicio" },
-  { href: "/catalogo", icon: Magnifier, label: "Catalogo" },
-  { href: "/carrito", icon: ShoppingCart, label: "Carrito", showBadge: true },
-  { href: "/login", icon: Person, label: "Cuenta", authHref: "/cuenta" },
+  { href: "/", icon: IconHome, label: "Inicio" },
+  { href: "/catalogo", icon: IconSearch, label: "Catalogo" },
+  { href: "/carrito", icon: IconBag, label: "Carrito", showBadge: true },
+  { href: "/login", icon: IconUser, label: "Cuenta", authHref: "/cuenta" },
 ];
 
 export default function BottomNav() {
@@ -19,7 +52,18 @@ export default function BottomNav() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-white/10 z-50 safe-area-bottom">
+    <motion.nav 
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        background: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        borderTop: "1px solid var(--border)",
+      }}
+    >
       <div className="flex items-center justify-around h-16">
         {NAV_ITEMS.map((item) => {
           const href = item.authHref && isAuthenticated() ? item.authHref : item.href;
@@ -30,26 +74,49 @@ export default function BottomNav() {
             <Link
               key={item.label}
               href={href}
-              className={`flex flex-col items-center justify-center gap-1 w-16 py-2 transition-colors ${
-                isActive ? "text-[var(--store-primary)]" : "text-white/50 hover:text-white/80"
-              }`}
+              className="relative flex flex-col items-center justify-center gap-1 w-16 py-2 transition-colors"
             >
-              <div className="relative">
-                <Icon className="w-5 h-5" />
+              <motion.div 
+                className="relative"
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.1 }}
+              >
+                <Icon 
+                  className="w-5 h-5" 
+                  style={{ 
+                    color: isActive ? "var(--store-primary)" : "var(--muted)",
+                    strokeWidth: isActive ? 2 : 1.5
+                  }} 
+                />
                 {item.showBadge && itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-[var(--store-primary)] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-2 text-white text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
+                    style={{ background: "var(--store-primary)" }}
+                  >
                     {itemCount > 9 ? "9+" : itemCount}
-                  </span>
+                  </motion.span>
                 )}
-              </div>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              </motion.div>
+              <span 
+                className="text-[10px] font-medium"
+                style={{ color: isActive ? "var(--store-primary)" : "var(--muted)" }}
+              >
+                {item.label}
+              </span>
               {isActive && (
-                <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-[var(--store-primary)]" />
+                <motion.span 
+                  layoutId="bottomNavIndicator"
+                  className="absolute -bottom-0.5 w-1 h-1 rounded-full"
+                  style={{ background: "var(--store-primary)" }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
               )}
             </Link>
           );
         })}
       </div>
-    </nav>
+    </motion.nav>
   );
 }
