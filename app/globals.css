@@ -1,0 +1,369 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@import "@heroui/styles";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-surface-solid-secondary: var(--surface-solid-secondary);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-brand: var(--brand);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-store-primary: var(--store-primary);
+  --color-store-secondary: var(--store-secondary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* ── Storefront Light Theme (default) ── */
+/* Store colors are injected dynamically via TenantTheme component */
+
+:root,
+.light,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --store-primary: #2563EB;
+  --store-secondary: #ffffff;
+  --store-primary-light: color-mix(in srgb, var(--store-primary) 8%, transparent);
+  --store-primary-medium: color-mix(in srgb, var(--store-primary) 15%, transparent);
+
+  --accent: var(--store-primary);
+  --accent-foreground: #ffffff;
+  --brand: var(--store-primary);
+  --brand-foreground: #ffffff;
+  --background: #f5f5f7;
+  --foreground: #222224;
+  --surface: rgba(0, 0, 0, 0.04);
+  --surface-secondary: rgba(0, 0, 0, 0.06);
+  --surface-tertiary: rgba(0, 0, 0, 0.03);
+  --surface-solid: #ffffff;
+  --surface-solid-secondary: #f9f9fb;
+
+  --border: rgba(0, 0, 0, 0.08);
+  --muted: #5a5a64;
+
+  --danger: #EF4444;
+  --danger-foreground: #7f1d1d;
+  --success: #22C55E;
+  --success-foreground: #14532d;
+  --warning: #F59E0B;
+  --warning-foreground: #78350f;
+  --default: rgba(0, 0, 0, 0.06);
+  --default-foreground: #222224;
+  --field-background: rgba(0, 0, 0, 0.06);
+  --field-foreground: #222224;
+  --field-placeholder: #5a5a64;
+  --focus: var(--store-primary);
+  --overlay: rgba(0, 0, 0, 0.04);
+  --scrollbar: rgba(0, 0, 0, 0.20);
+
+  --radius: 1rem;
+  --field-radius: 0.75rem;
+  --card-radius: 22px;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-elevated: 0 20px 60px -12px rgba(0,0,0,0.15);
+
+  /* Layout colors */
+  --header-bg: #111827;
+  --footer-bg: #030712;
+}
+
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --store-primary-light: color-mix(in srgb, var(--store-primary) 12%, transparent);
+  --store-primary-medium: color-mix(in srgb, var(--store-primary) 20%, transparent);
+
+  --accent: var(--store-primary);
+  --accent-foreground: #ffffff;
+  --brand: var(--store-primary);
+  --brand-foreground: #ffffff;
+  --background: #000000;
+  --foreground: #F2F2F2;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-secondary: rgba(255, 255, 255, 0.09);
+  --surface-tertiary: rgba(255, 255, 255, 0.04);
+  --surface-solid: #1a1a1a;
+  --surface-solid-secondary: #262626;
+
+  --border: rgba(255, 255, 255, 0.12);
+  --muted: #888891;
+
+  --danger: #F87171;
+  --danger-foreground: #1a0505;
+  --success: #4ADE80;
+  --success-foreground: #051a0e;
+  --warning: #FCD34D;
+  --warning-foreground: #1a1205;
+  --default: rgba(255, 255, 255, 0.08);
+  --default-foreground: #F2F2F2;
+  --field-background: rgba(255, 255, 255, 0.06);
+  --field-foreground: #F0F0F0;
+  --field-placeholder: #78787f;
+  --focus: var(--store-primary);
+  --overlay: rgba(255, 255, 255, 0.08);
+  --scrollbar: rgba(255, 255, 255, 0.15);
+
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 8px 32px rgba(0,0,0,0.10);
+  --shadow-elevated: 0 16px 48px -8px rgba(0,0,0,0.12);
+
+  /* Layout colors */
+  --header-bg: #111827;
+  --footer-bg: #030712;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Focus ring ── */
+*:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--store-primary) 25%, transparent);
+  color: var(--foreground);
+}
+
+/* ── Store utilities ── */
+
+.store-container {
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .store-container { padding-inline: 1.5rem; }
+}
+
+@media (min-width: 1280px) {
+  .store-container { padding-inline: 2rem; }
+}
+
+/* ── Section title ── */
+
+.section-title {
+  color: var(--foreground);
+  font-weight: 800;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  line-height: 1.1;
+}
+
+/* ── Surface card (used for product cards in light theme) ── */
+
+.surface-card {
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.surface-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+}
+
+/* ── Glass morphism ── */
+
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+}
+
+/* ── Discount badge ── */
+
+.discount-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--store-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  z-index: 10;
+}
+
+/* ── Floating action buttons ── */
+
+@keyframes fab-entrance {
+  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fab-whatsapp {
+  position: fixed;
+  bottom: 150px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25d366;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 90;
+  transition: transform 0.2s;
+  animation: fab-entrance 0.5s ease-out 1s both;
+}
+
+@media (min-width: 768px) {
+  .fab-whatsapp { bottom: 110px; right: 25px; width: 60px; height: 60px; }
+}
+
+.fab-whatsapp:hover { transform: scale(1.1); }
+
+.fab-email {
+  position: fixed;
+  bottom: 85px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #2a40be;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 90;
+  transition: transform 0.2s;
+  animation: fab-entrance 0.5s ease-out 1.3s both;
+}
+
+@media (min-width: 768px) {
+  .fab-email { bottom: 40px; right: 25px; width: 60px; height: 60px; }
+}
+
+.fab-email:hover { transform: scale(1.1); }
+
+/* ── Product card transitions ── */
+
+.product-card-img {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-card:hover .product-card-img {
+  transform: scale(1.06);
+}
+
+/* Quick-action overlay on product cards */
+.product-card .card-actions {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.product-card:hover .card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Skeleton shimmer animation ── */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--surface-solid) 25%, var(--surface-solid-secondary) 50%, var(--surface-solid) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+/* ── Section divider ── */
+
+.section-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-divider::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+
+/* ── Brand marquee ── */
+
+@keyframes scroll-brands {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.brand-marquee {
+  animation: scroll-brands 30s linear infinite;
+}
+
+.brand-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ── Button press effect ── */
+
+.btn-press {
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.96);
+}
+
+/* ── Safe area for iPhone notch/home indicator ── */
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
