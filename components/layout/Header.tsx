@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useTenant } from "@/context/TenantContext";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/lib/api/store";
 import type { Tenant } from "@/lib/types/tenant";
@@ -21,7 +22,7 @@ import {
 import type { MenuItem } from "./header/menu-types";
 
 // ---------------------------------------------------------------------------
-// Default menu data -- can be overridden by tenant.config.menu_items
+// Default menu data
 // ---------------------------------------------------------------------------
 
 const DEFAULT_MENU_ITEMS: MenuItem[] = [
@@ -35,10 +36,7 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
         items: [
           { name: "Ver todo", href: "/catalogo?q=pokemon" },
           { name: "Sellado", href: "/catalogo?q=pokemon+sellado" },
-          {
-            name: "Accesorios Pokemon",
-            href: "/catalogo?q=pokemon+accesorios",
-          },
+          { name: "Accesorios Pokemon", href: "/catalogo?q=pokemon+accesorios" },
         ],
       },
       {
@@ -93,21 +91,9 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
       { name: "Ver Todo", href: "/catalogo?categoria=figures-miniatures" },
     ],
   },
-  {
-    label: "PLAYMATS",
-    href: "/catalogo?categoria=playmats",
-    type: "link",
-  },
-  {
-    label: "PREVENTAS",
-    href: "/catalogo?categoria=pre-orders",
-    type: "link",
-  },
-  {
-    label: "TORNEOS",
-    href: "/torneos",
-    type: "link",
-  },
+  { label: "PLAYMATS", href: "/catalogo?categoria=playmats", type: "link" },
+  { label: "PREVENTAS", href: "/catalogo?categoria=pre-orders", type: "link" },
+  { label: "TORNEOS", href: "/torneos", type: "link" },
 ];
 
 function buildTenantMenuItems(tenant: Tenant): MenuItem[] {
@@ -115,9 +101,7 @@ function buildTenantMenuItems(tenant: Tenant): MenuItem[] {
     return tenant.config.menu_items;
   }
 
-  const tiles = (tenant.config?.category_tiles ?? []).filter(
-    (tile) => !!tile.link_url,
-  );
+  const tiles = (tenant.config?.category_tiles ?? []).filter((tile) => !!tile.link_url);
 
   if (tiles.length > 0) {
     const tenantItems: MenuItem[] = tiles.slice(0, 8).map((tile) => ({
@@ -138,77 +122,37 @@ function buildTenantMenuItems(tenant: Tenant): MenuItem[] {
 }
 
 // ---------------------------------------------------------------------------
-// SVG Icons
+// SVG Icons - Simplified, thinner strokes for Apple style
 // ---------------------------------------------------------------------------
 
 function IconUser({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={2.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-      />
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
     </svg>
   );
 }
 
 function IconSearch({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={2.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-      />
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
   );
 }
 
 function IconBag({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={2.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-      />
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
     </svg>
   );
 }
 
 function IconHamburger({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-      />
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
     </svg>
   );
 }
@@ -222,6 +166,7 @@ export default function Header() {
   const pathname = usePathname();
   const itemCount = useCartStore((s) => s.itemCount);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { scrollY } = useScroll();
 
   // State
   const [promoDismissed, setPromoDismissed] = useState(false);
@@ -229,90 +174,139 @@ export default function Header() {
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   const logoSrc = tenant.logo_url || "/assets/logos/LogoSuperior.png";
 
-  // Fetch categories (available for dynamic menu in the future)
+  // Track scroll for header style change
+  useEffect(() => {
+    const unsubscribe = scrollY.on("change", (latest) => {
+      setHasScrolled(latest > 50);
+    });
+    return unsubscribe;
+  }, [scrollY]);
+
+  // Animation values
+  const headerBg = useTransform(
+    scrollY,
+    [0, 100],
+    ["rgba(255,255,255,0)", "rgba(255,255,255,0.85)"]
+  );
+  const headerBorder = useTransform(
+    scrollY,
+    [0, 100],
+    ["rgba(0,0,0,0)", "rgba(0,0,0,0.08)"]
+  );
+
   useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
     staleTime: 10 * 60 * 1000,
   });
 
-  // Use tenant menu items if available, otherwise use defaults
   const menuItems: MenuItem[] = buildTenantMenuItems(tenant);
 
-  // Promo bar text
   const promoText =
     tenant.config?.promo_bar_text ||
     `Envios a Todo Chile! Retiro en tienda ${tenant.address || ""}, ${tenant.city || ""}.`;
 
   const isHome = pathname === "/";
+  const isTransparent = isHome && !hasScrolled;
+
+  // Text is always white matching Blue Card Store reference
+  const textColorClass = "text-white";
+  const textMutedClass = "text-white/80";
 
   return (
     <>
-      <header
-        className={`sticky top-0 z-50 ${isHome ? "bg-transparent absolute left-0 right-0 bg-gradient-to-b from-black via-black/60 to-transparent pb-6" : "bg-[var(--header-bg)]"}`}
+      <motion.header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300`}
+        style={{
+          backgroundColor: isTransparent ? "transparent" : "#000000",
+          backgroundImage: isTransparent ? "linear-gradient(rgba(0, 0, 0, 0.7) 0px, rgba(0, 0, 0, 0) 90%, rgba(0, 0, 0, 0) 100%)" : "none",
+          backdropFilter: "blur(0px)",
+          WebkitBackdropFilter: "blur(0px)",
+        }}
       >
-        {/* Promo bar */}
-        {!promoDismissed && (
-          <PromoBar
-            text={promoText}
-            onDismiss={() => setPromoDismissed(true)}
-          />
-        )}
+        {/* Promo bar - Hidden on scroll */}
+        <AnimatePresence>
+          {!promoDismissed && !hasScrolled && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <PromoBar text={promoText} onDismiss={() => setPromoDismissed(true)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+        <div className="store-container">
+          <div className={`flex items-center justify-between transition-all duration-300 ${hasScrolled ? "h-14 md:h-16" : "h-16 md:h-24"}`}>
             {/* Logo */}
-            <Link href="/" className="shrink-0">
-              <Image
-                src={logoSrc}
-                alt={tenant.name}
-                width={140}
-                height={60}
-                className="h-14 w-auto object-contain"
-                priority
-              />
+            <Link href="/" className="shrink-0 flex items-center">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Image
+                  src={logoSrc}
+                  alt={tenant.name}
+                  width={160}
+                  height={60}
+                  className={`w-auto object-contain transition-all duration-300 ${hasScrolled ? "h-8 md:h-10" : "h-12 md:h-16"}`}
+                  priority
+                />
+              </motion.div>
             </Link>
 
             {/* Desktop Navigation */}
-            <DesktopNav menuItems={menuItems} />
+            <DesktopNav menuItems={menuItems} scrolled={hasScrolled} isHome={isHome} />
 
             {/* Right Actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 md:gap-4">
               {/* Login / Account icon */}
               <Link
                 href={isAuthenticated() ? "/cuenta" : "/login"}
-                className="hidden sm:flex items-center justify-center w-10 h-10 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                className={`hidden sm:flex items-center justify-center w-10 h-10 ${textMutedClass} hover:${textColorClass} transition-colors rounded-full hover:bg-black/5`}
                 aria-label="Mi cuenta"
               >
                 <IconUser className="w-5 h-5" />
               </Link>
 
               {/* Search icon */}
-              <button
+              <motion.button
                 onClick={() => setSearchOpen(true)}
-                className="flex items-center justify-center w-10 h-10 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                className={`flex items-center justify-center w-10 h-10 ${textMutedClass} hover:${textColorClass} transition-colors rounded-full hover:bg-black/5`}
                 aria-label="Buscar"
+                whileTap={{ scale: 0.95 }}
               >
                 <IconSearch className="w-5 h-5" />
-              </button>
+              </motion.button>
 
               {/* Cart icon with badge */}
               <div className="relative">
-                <button
+                <motion.button
                   onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
-                  className="relative flex items-center justify-center w-10 h-10 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                  className={`relative flex items-center justify-center w-10 h-10 ${textMutedClass} hover:${textColorClass} transition-colors rounded-full hover:bg-black/5`}
                   aria-label="Carrito de compras"
+                  whileTap={{ scale: 0.95 }}
                 >
                   <IconBag className="w-5 h-5" />
                   {itemCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-0.5 -right-0.5 text-white text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none"
+                      style={{ background: "var(--store-primary)" }}
+                    >
                       {itemCount > 99 ? "99+" : itemCount}
-                    </span>
+                    </motion.span>
                   )}
-                </button>
+                </motion.button>
 
                 <CartDropdown
                   isOpen={cartDropdownOpen}
@@ -321,17 +315,21 @@ export default function Header() {
               </div>
 
               {/* Hamburger -- mobile only */}
-              <button
-                className="lg:hidden flex items-center justify-center w-10 h-10 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+              <motion.button
+                className={`lg:hidden flex items-center justify-center w-10 h-10 ${textMutedClass} hover:${textColorClass} transition-colors rounded-full hover:bg-black/5`}
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Abrir menu"
+                whileTap={{ scale: 0.95 }}
               >
                 <IconHamburger className="w-5 h-5" />
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
+
+      {/* Spacer to prevent content from going under fixed header on non-home pages */}
+      {!isHome && <div className={`h-16 md:h-20 ${!promoDismissed ? "mt-8" : ""}`} />}
 
       {/* Search Overlay */}
       <SearchOverlay

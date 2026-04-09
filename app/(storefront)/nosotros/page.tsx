@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getTenant } from "@/lib/api/tenant";
 import { buildBreadcrumbJsonLd } from "@/lib/seo/json-ld";
 import JsonLd from "@/components/seo/JsonLd";
-import NosotrosContent from "@/features/static/NosotrosContent";
+import { themeRegistry } from "@/themes/registry";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieStore = await cookies();
@@ -33,9 +33,10 @@ export default async function NosotrosPage() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("tenant-slug")?.value || "calabozo";
 
+  let tenant = null;
   let breadcrumbJsonLd = null;
   try {
-    const tenant = await getTenant(slug);
+    tenant = await getTenant(slug);
     breadcrumbJsonLd = buildBreadcrumbJsonLd(
       [
         { name: "Inicio", url: "/" },
@@ -47,10 +48,13 @@ export default async function NosotrosPage() {
     // degrade gracefully
   }
 
+  // Find the exact Theme Nosotros Page
+  const ThemeNosotrosPage = themeRegistry[slug]?.pages?.NosotrosPage || themeRegistry.default.pages.NosotrosPage;
+
   return (
     <>
       {breadcrumbJsonLd && <JsonLd data={breadcrumbJsonLd} />}
-      <NosotrosContent />
+      <ThemeNosotrosPage tenant={tenant} />
     </>
   );
 }

@@ -55,6 +55,7 @@ export interface TenantSchedule {
 
 export interface TenantStorefrontConfig {
   carousel_images?: CarouselSlide[];
+  carousel_slides?: CarouselSlide[];
   category_tiles?: CategoryTile[];
   community_images?: CategoryTile[];
   menu_items?: TenantMenuItem[];
@@ -66,6 +67,8 @@ export interface TenantStorefrontConfig {
   about_html?: string;
   terms_html?: string;
   promo_bar_text?: string;
+  social_links?: { instagram?: string; tiktok?: string; facebook?: string };
+  operating_schedules?: { days: string; hours: string }[];
 }
 
 export interface TenantMenuSubItem {
@@ -89,7 +92,10 @@ export interface TenantMenuItem {
 export interface CarouselSlide {
   image_url: string;
   link_url?: string;
+  link_text?: string;
   alt_text?: string;
+  title?: string;
+  subtitle?: string;
 }
 
 export interface CategoryTile {

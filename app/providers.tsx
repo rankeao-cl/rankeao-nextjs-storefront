@@ -22,13 +22,13 @@ export function Providers({ tenant, children }: { tenant: Tenant; children: Reac
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <QueryClientProvider client={queryClient}>
         <TenantProvider tenant={tenant}>
           {children}
           <Toast.Provider placement="top end" />
         </TenantProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

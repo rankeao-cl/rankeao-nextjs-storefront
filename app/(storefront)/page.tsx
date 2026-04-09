@@ -2,6 +2,9 @@ import React from "react";
 import HomeClient from "@/features/home/HomeClient";
 import { headers } from "next/headers";
 
+import { getTenant } from "@/lib/api/tenant";
+import { getThemeConfig } from "@/themes/registry";
+
 export default async function HomePage() {
   const headersList = await headers();
   const slug = headersList.get("x-tenant-slug") || "__directory__";
@@ -20,5 +23,15 @@ export default async function HomePage() {
     );
   }
 
-  return <HomeClient />;
+  let tenantData = null;
+  try {
+      tenantData = await getTenant(slug);
+  } catch (e) {
+      // Return empty if failure
+      return null;
+  }
+
+  const ThemeHome = getThemeConfig(slug).pages.HomePage;
+
+  return <ThemeHome tenant={tenantData} />;
 }

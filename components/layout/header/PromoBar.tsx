@@ -15,10 +15,10 @@ function IconX({ className = "w-5 h-5" }: { className?: string }) {
 
 export default function PromoBar({ text, onDismiss }: Props) {
   return (
-    <div className="text-white text-center py-1.5 px-10 text-[11px] md:text-xs relative">
-      <p className="leading-snug opacity-80">{text}</p>
+    <div className="bg-gradient-to-b from-black/80 via-black/30 to-transparent text-white text-center pt-2 pb-6 px-10 text-[11px] md:text-xs relative">
+      <p className="leading-snug opacity-90 relative z-10">{text}</p>
       <button
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+        className="absolute right-3 top-2 text-white/50 hover:text-white transition-colors z-10"
         aria-label="Cerrar"
         onClick={onDismiss}
       >

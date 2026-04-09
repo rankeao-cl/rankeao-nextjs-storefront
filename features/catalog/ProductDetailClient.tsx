@@ -2,28 +2,21 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import {
-  getProductDetail,
-  addCartItem,
-  getTenantProducts,
-} from "@/lib/api/store";
+import { motion, AnimatePresence } from "framer-motion";
+import { getProductDetail, addCartItem, getTenantProducts } from "@/lib/api/store";
 import { useTenant } from "@/context/TenantContext";
 import ProductCarousel from "@/components/ui/ProductCarousel";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { useCartStore } from "@/lib/stores/cart-store";
 import type { Product } from "@/lib/types/store";
 import { formatPrice, getDiscountPercent } from "@/lib/utils/format";
-import { ShoppingCart, ArrowLeft } from "@gravity-ui/icons";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "@heroui/react";
+import { FadeUp } from "@/lib/motion";
 
-export default function ProductDetailClient({
-  productId,
-}: {
-  productId: string;
-}) {
+export default function ProductDetailClient({ productId }: { productId: string }) {
   const tenant = useTenant();
   const router = useRouter();
   const increment = useCartStore((s) => s.increment);
@@ -31,6 +24,7 @@ export default function ProductDetailClient({
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["product", productId],
@@ -38,26 +32,17 @@ export default function ProductDetailClient({
   });
 
   const product = data?.data;
-  const stockCount =
-    typeof product?.stock === "number" ? product.stock : undefined;
-  const isAvailable =
-    stockCount !== undefined ? stockCount > 0 : product?.in_stock !== false;
+  const stockCount = typeof product?.stock === "number" ? product.stock : undefined;
+  const isAvailable = stockCount !== undefined ? stockCount > 0 : product?.in_stock !== false;
 
-  // D6: Related products from same category
   const { data: relatedData } = useQuery({
     queryKey: ["related-products", tenant.slug, product?.category_id],
-    queryFn: () =>
-      getTenantProducts(tenant.slug, {
-        category: product?.category_id || undefined,
-        per_page: 12,
-      }),
+    queryFn: () => getTenantProducts(tenant.slug, { category: product?.category_id || undefined, per_page: 12 }),
     enabled: !!product?.category_id,
   });
 
   const relatedProducts = (
-    product?.related_products?.length
-      ? product.related_products
-      : (relatedData?.products ?? [])
+    product?.related_products?.length ? product.related_products : (relatedData?.products ?? [])
   ).filter((p) => p.id !== productId);
 
   async function handleRelatedAddToCart(p: Product) {
@@ -100,13 +85,16 @@ export default function ProductDetailClient({
 
   if (isLoading) {
     return (
-      <div className="store-container py-8 animate-pulse">
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="aspect-square bg-[var(--surface)] rounded-xl" />
-          <div className="space-y-4">
-            <div className="h-8 bg-[var(--surface-secondary)] rounded w-3/4" />
-            <div className="h-4 bg-[var(--surface)] rounded w-1/2" />
-            <div className="h-10 bg-[var(--surface-secondary)] rounded w-1/3 mt-6" />
+      <div className="store-container py-12">
+        <div className="grid md:grid-cols-2 gap-12">
+          <div 
+            className="aspect-square rounded-3xl skeleton-shimmer"
+            style={{ background: "var(--surface)" }}
+          />
+          <div className="space-y-6">
+            <div className="h-8 rounded-xl w-3/4 skeleton-shimmer" style={{ background: "var(--surface)" }} />
+            <div className="h-4 rounded w-1/2 skeleton-shimmer" style={{ background: "var(--surface)" }} />
+            <div className="h-12 rounded-xl w-1/3 mt-8 skeleton-shimmer" style={{ background: "var(--surface)" }} />
           </div>
         </div>
       </div>
@@ -115,296 +103,366 @@ export default function ProductDetailClient({
 
   if (!product) {
     return (
-      <div className="store-container py-16 text-center">
-        <p className="text-muted text-lg">Producto no encontrado</p>
-        <Link
-          href="/catalogo"
-          className="text-[var(--store-primary)] hover:underline mt-4 inline-block"
+      <div className="store-container py-20 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
         >
-          Volver al catalogo
-        </Link>
+          <div 
+            className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+            style={{ background: "var(--surface)" }}
+          >
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5} style={{ color: "var(--muted)" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--foreground)" }}>
+            Producto no encontrado
+          </h2>
+          <p className="mb-6" style={{ color: "var(--muted)" }}>
+            El producto que buscas no existe o fue eliminado
+          </p>
+          <Link href="/catalogo" className="btn-primary">
+            Volver al catalogo
+          </Link>
+        </motion.div>
       </div>
     );
   }
 
   const images = product.images || [];
   const currentImage = images[selectedImage]?.url;
-  const discount = product.compare_at_price
-    ? getDiscountPercent(product.price || 0, product.compare_at_price)
-    : 0;
+  const discount = product.compare_at_price ? getDiscountPercent(product.price || 0, product.compare_at_price) : 0;
+  const description = product.description || "";
+  const shouldTruncateDesc = description.length > 300;
 
   return (
-    <div className="store-container py-8">
-      {/* D10: Breadcrumbs */}
+    <div className="store-container py-8 md:py-12">
+      {/* Breadcrumbs */}
       <Breadcrumb
         items={[
           { label: "Inicio", href: "/" },
           { label: "Catalogo", href: "/catalogo" },
-          ...(product.category_name
-            ? [
-                {
-                  label: product.category_name,
-                  href: `/catalogo?categoria=${product.category_id || ""}`,
-                },
-              ]
-            : []),
+          ...(product.category_name ? [{ label: product.category_name, href: `/catalogo?categoria=${product.category_id || ""}` }] : []),
           { label: product.name || product.title || "Producto" },
         ]}
       />
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-8 md:gap-12 mt-6">
         {/* Images */}
-        <div>
-          <div className="relative aspect-square bg-[var(--surface)] rounded-xl overflow-hidden mb-4">
+        <FadeUp>
+          <div 
+            className="relative aspect-square rounded-3xl overflow-hidden"
+            style={{ background: "var(--surface-tertiary)" }}
+          >
             {discount > 0 && (
-              <div className="discount-badge text-base">-{discount}%</div>
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute top-4 left-4 z-10 text-white text-sm font-semibold px-3 py-1.5 rounded-full"
+                style={{ background: "#ff3b30" }}
+              >
+                -{discount}%
+              </motion.span>
             )}
-            {currentImage ? (
-              <Image
-                src={currentImage}
-                alt={product.name || ""}
-                fill
-                className="object-contain p-4"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted">
-                Sin imagen
-              </div>
-            )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedImage}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                {currentImage ? (
+                  <Image
+                    src={currentImage}
+                    alt={product.name || ""}
+                    fill
+                    className="object-contain p-6"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ color: "var(--muted)" }}>
+                    <svg className="w-16 h-16 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
+          
+          {/* Thumbnails - smaller */}
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            <div className="flex gap-2.5 mt-4 overflow-x-auto no-scrollbar pb-2">
               {images.map((img, i) => (
-                <button
+                <motion.button
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
-                    i === selectedImage
-                      ? "border-[var(--store-primary)]"
-                      : "border-transparent"
-                  }`}
+                  className="shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden transition-all"
+                  style={{ 
+                    background: "var(--surface-tertiary)",
+                    border: i === selectedImage ? "2px solid var(--store-primary)" : "2px solid transparent"
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <Image
                     src={img.url}
                     alt=""
                     width={64}
                     height={64}
-                    className="object-contain w-full h-full"
+                    className="object-contain w-full h-full p-1"
                   />
-                </button>
+                </motion.button>
               ))}
             </div>
           )}
-        </div>
+        </FadeUp>
 
         {/* Info */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            {product.name || product.title}
-          </h1>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Category / Game */}
+            {(product.category_name || product.game_name) && (
+              <p className="text-sm mb-2" style={{ color: "var(--muted)" }}>
+                {[product.category_name, product.game_name].filter(Boolean).join(" / ")}
+              </p>
+            )}
 
-          {product.category_name && (
-            <p className="text-sm text-muted mb-1">{product.category_name}</p>
-          )}
-          {product.game_name && (
-            <p className="text-sm text-muted mb-4">{product.game_name}</p>
-          )}
+            <h1 
+              className="text-2xl md:text-3xl font-bold mb-6 text-balance"
+              style={{ color: "var(--foreground)" }}
+            >
+              {product.name || product.title}
+            </h1>
 
-          <div className="mb-6">
-            {product.compare_at_price &&
-              product.compare_at_price > (product.price || 0) && (
-                <p className="text-lg text-muted line-through">
+            {/* Price - elegant black */}
+            <div className="mb-8">
+              {product.compare_at_price && product.compare_at_price > (product.price || 0) && (
+                <p className="text-lg line-through" style={{ color: "var(--muted)" }}>
                   {formatPrice(product.compare_at_price, product.currency)}
                 </p>
               )}
-            <p className="text-3xl font-bold text-[var(--store-primary)]">
-              {formatPrice(product.price, product.currency)}
-            </p>
-          </div>
-
-          {/* Stock */}
-          <div className="mb-6">
-            {isAvailable ? (
-              <span className="inline-flex items-center gap-1 text-sm text-success bg-success/10 px-3 py-1 rounded-full">
-                {stockCount !== undefined
-                  ? `${stockCount} disponible${stockCount > 1 ? "s" : ""}`
-                  : "Disponible"}
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-sm text-danger bg-danger/10 px-3 py-1 rounded-full">
-                Agotado
-              </span>
-            )}
-          </div>
-
-          {/* Quantity + Add to Cart + Buy Now */}
-          {isAvailable && (
-            <div className="space-y-3 mb-8">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border border-border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 text-foreground hover:bg-[var(--surface)]"
-                  >
-                    -
-                  </button>
-                  <span className="px-4 py-2 text-foreground font-medium">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setQuantity(
-                        stockCount
-                          ? Math.min(stockCount, quantity + 1)
-                          : quantity + 1,
-                      )
-                    }
-                    className="px-3 py-2 text-foreground hover:bg-[var(--surface)]"
-                  >
-                    +
-                  </button>
-                </div>
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--store-primary)] hover:brightness-110 text-white font-semibold rounded-lg transition-all disabled:opacity-70"
-                >
-                  {isAddingToCart ? (
-                    <svg
-                      className="w-5 h-5 animate-spin"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                  ) : (
-                    <ShoppingCart className="w-5 h-5" />
-                  )}
-                  {isAddingToCart ? "Agregando..." : "Agregar al carrito"}
-                </button>
-              </div>
-              <button
-                onClick={handleBuyNow}
-                disabled={isBuyingNow}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-foreground text-[var(--surface-solid)] font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-70"
+              <p 
+                className="text-3xl md:text-4xl font-bold"
+                style={{ color: "var(--foreground)" }}
               >
-                {isBuyingNow ? (
-                  <svg
-                    className="w-5 h-5 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                )}
-                {isBuyingNow ? "Procesando..." : "Comprar ahora"}
-              </button>
-            </div>
-          )}
-
-          {/* Description */}
-          {product.description && (
-            <div className="border-t border-border pt-6">
-              <h3 className="font-semibold text-foreground mb-3">
-                Descripcion
-              </h3>
-              <p className="text-sm text-muted whitespace-pre-wrap">
-                {product.description}
+                {formatPrice(product.price, product.currency)}
               </p>
             </div>
-          )}
 
-          {/* E4: Card details as badge pills */}
-          {(product.card_condition || product.is_foil) && (
-            <div className="border-t border-border pt-6 mt-6">
-              <h3 className="font-semibold text-foreground mb-3">Detalles</h3>
-              <div className="flex flex-wrap gap-2">
-                {product.card_condition && (
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-[var(--surface)] text-foreground px-3 py-1.5 rounded-full border border-border">
-                    <svg
-                      className="w-3.5 h-3.5 text-muted"
+            {/* Stock badge */}
+            <div className="mb-8">
+              {isAvailable ? (
+                <span 
+                  className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full"
+                  style={{ background: "rgba(34, 197, 94, 0.1)", color: "var(--success)" }}
+                >
+                  <span className="w-2 h-2 rounded-full bg-current" />
+                  {stockCount !== undefined ? `${stockCount} disponible${stockCount > 1 ? "s" : ""}` : "Disponible"}
+                </span>
+              ) : (
+                <span 
+                  className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full"
+                  style={{ background: "rgba(239, 68, 68, 0.1)", color: "var(--danger)" }}
+                >
+                  <span className="w-2 h-2 rounded-full bg-current" />
+                  Agotado
+                </span>
+              )}
+            </div>
+
+            {/* Quantity + Actions */}
+            {isAvailable && (
+              <div className="space-y-4 mb-10">
+                <div className="flex items-center gap-4">
+                  {/* Quantity selector - pill shape */}
+                  <div 
+                    className="flex items-center rounded-full overflow-hidden"
+                    style={{ background: "var(--surface)" }}
+                  >
+                    <motion.button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-4 py-3 transition-colors"
+                      style={{ color: "var(--foreground)" }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                      </svg>
+                    </motion.button>
+                    <span 
+                      className="px-4 py-3 font-medium min-w-[48px] text-center"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {quantity}
+                    </span>
+                    <motion.button
+                      onClick={() => setQuantity(stockCount ? Math.min(stockCount, quantity + 1) : quantity + 1)}
+                      className="px-4 py-3 transition-colors"
+                      style={{ color: "var(--foreground)" }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                    </motion.button>
+                  </div>
+
+                  {/* Add to cart */}
+                  <motion.button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full font-medium text-white disabled:opacity-70"
+                    style={{ background: "var(--store-primary)" }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {isAddingToCart ? (
+                      <motion.svg
+                        className="w-5 h-5"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </motion.svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                      </svg>
+                    )}
+                    {isAddingToCart ? "Agregando..." : "Agregar al carrito"}
+                  </motion.button>
+                </div>
+
+                {/* Buy now */}
+                <motion.button
+                  onClick={handleBuyNow}
+                  disabled={isBuyingNow}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-full font-medium disabled:opacity-70"
+                  style={{ 
+                    background: "var(--foreground)", 
+                    color: "var(--background)" 
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {isBuyingNow ? (
+                    <motion.svg
+                      className="w-5 h-5"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       fill="none"
-                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </motion.svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                     </svg>
-                    {product.card_condition}
-                  </span>
-                )}
-                {product.is_foil && (
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-200">
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    Foil
-                  </span>
-                )}
+                  )}
+                  {isBuyingNow ? "Procesando..." : "Comprar ahora"}
+                </motion.button>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Description - collapsible if long */}
+            {description && (
+              <div 
+                className="pt-8"
+                style={{ borderTop: "1px solid var(--border)" }}
+              >
+                <h3 className="font-semibold mb-4" style={{ color: "var(--foreground)" }}>
+                  Descripcion
+                </h3>
+                <div className="relative">
+                  <p 
+                    className={`text-sm leading-relaxed whitespace-pre-wrap ${shouldTruncateDesc && !descExpanded ? "line-clamp-4" : ""}`}
+                    style={{ color: "var(--muted)" }}
+                  >
+                    {description}
+                  </p>
+                  {shouldTruncateDesc && (
+                    <button
+                      onClick={() => setDescExpanded(!descExpanded)}
+                      className="mt-2 text-sm font-medium link-arrow"
+                      style={{ color: "var(--store-primary)" }}
+                    >
+                      {descExpanded ? "Ver menos" : "Ver mas"}
+                      <svg 
+                        className="w-3.5 h-3.5 inline-block ml-1 transition-transform" 
+                        style={{ transform: descExpanded ? "rotate(180deg)" : "rotate(0)" }}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Card details */}
+            {(product.card_condition || product.is_foil) && (
+              <div 
+                className="pt-8 mt-8"
+                style={{ borderTop: "1px solid var(--border)" }}
+              >
+                <h3 className="font-semibold mb-4" style={{ color: "var(--foreground)" }}>
+                  Detalles
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.card_condition && (
+                    <span 
+                      className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full"
+                      style={{ background: "var(--surface)", color: "var(--foreground)" }}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5} style={{ color: "var(--success)" }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {product.card_condition}
+                    </span>
+                  )}
+                  {product.is_foil && (
+                    <span 
+                      className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full"
+                      style={{ background: "rgba(251, 191, 36, 0.1)", color: "#d97706" }}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      Foil
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
 
-      {/* D6: Related products */}
+      {/* Related products */}
       {relatedProducts.length > 0 && (
-        <div className="mt-12 pt-8 border-t border-border">
-          <h2 className="text-xl font-extrabold text-foreground mb-6">
-            Productos relacionados
-          </h2>
+        <section className="mt-16 md:mt-24 pt-12" style={{ borderTop: "1px solid var(--border)" }}>
           <ProductCarousel
+            title="Productos relacionados"
+            subtitle="Tambien te puede interesar"
             products={relatedProducts}
             onAddToCart={handleRelatedAddToCart}
           />
-        </div>
+        </section>
       )}
     </div>
   );
