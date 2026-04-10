@@ -1,5 +1,6 @@
 import { StorefrontLayout as DefaultStorefrontLayout } from "./default/layouts/StorefrontLayout";
 import { HomePage as DefaultHomePage } from "./default/pages/HomePage";
+import { NosotrosPage as DefaultNosotrosPageComponent } from "./default/pages/NosotrosPage";
 
 import { StorefrontLayout as BluecardStorefrontLayout } from "./bluecard/layouts/StorefrontLayout";
 import { HomePage as BluecardHomePage } from "./bluecard/pages/HomePage";
@@ -9,11 +10,6 @@ import { HomePage as CalabozoHomePage } from "./calabozo/pages/HomePage";
 import { NosotrosPage as CalabozoNosotrosPage } from "./calabozo/pages/NosotrosPage";
 
 import React from "react";
-
-// A fallback component for themes that haven't implemented NosotrosPage yet
-function DefaultNosotrosPage() {
-  return React.createElement("div", { className: "p-8 text-center text-gray-500" }, "Página de Nosotros en construcción...");
-}
 
 export interface ThemeComponents {
   layouts: {
@@ -32,7 +28,7 @@ export const themeRegistry: Record<string, ThemeComponents> = {
     },
     pages: {
       HomePage: DefaultHomePage,
-      NosotrosPage: DefaultNosotrosPage,
+      NosotrosPage: DefaultNosotrosPageComponent,
     }
   },
   "bluecard": {
@@ -41,7 +37,7 @@ export const themeRegistry: Record<string, ThemeComponents> = {
     },
     pages: {
       HomePage: BluecardHomePage,
-      NosotrosPage: DefaultNosotrosPage,
+      NosotrosPage: DefaultNosotrosPageComponent,
     }
   },
   "calabozo": {
