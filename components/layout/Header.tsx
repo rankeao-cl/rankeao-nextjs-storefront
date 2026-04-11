@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/lib/api/store";
 import type { Tenant } from "@/lib/types/tenant";
+import type { ProductCategory } from "@/lib/types/store";
 
 import {
   PromoBar,
@@ -96,28 +97,64 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
   { label: "TORNEOS", href: "/torneos", type: "link" },
 ];
 
-function buildTenantMenuItems(tenant: Tenant): MenuItem[] {
+function buildCategoryMenuItems(categories: ProductCategory[]): MenuItem[] {
+  const topLevel = categories.filter((c) => !c.parent_id);
+
+  const items: MenuItem[] = topLevel.slice(0, 8).map((cat) => {
+    const children = cat.children ?? categories.filter((c) => c.parent_id === cat.id);
+    const href = `/catalogo?category_id=${cat.id}`;
+
+    if (children.length > 0) {
+      return {
+        label: cat.name.toUpperCase(),
+        href,
+        type: "dropdown",
+        items: [
+          { name: "Ver todo", href },
+          ...children.slice(0, 8).map((child) => ({
+            name: child.name,
+            href: `/catalogo?category_id=${child.id}`,
+          })),
+        ],
+      };
+    }
+
+    return { label: cat.name.toUpperCase(), href, type: "link" };
+  });
+
+  if (!items.some((i) => i.href === "/torneos")) {
+    items.push({ label: "TORNEOS", href: "/torneos", type: "link" });
+  }
+
+  return items;
+}
+
+function buildTenantMenuItems(tenant: Tenant, categories: ProductCategory[]): MenuItem[] {
+  // 1. Custom menu configured by the tenant
   if (tenant.config?.menu_items?.length) {
     return tenant.config.menu_items;
   }
 
-  const tiles = (tenant.config?.category_tiles ?? []).filter((tile) => !!tile.link_url);
+  // 2. Real categories from API
+  if (categories.length > 0) {
+    return buildCategoryMenuItems(categories);
+  }
 
+  // 3. Category tiles from tenant config
+  const tiles = (tenant.config?.category_tiles ?? []).filter((tile) => !!tile.link_url);
   if (tiles.length > 0) {
     const tenantItems: MenuItem[] = tiles.slice(0, 8).map((tile) => ({
       label: (tile.title || "Catalogo").toUpperCase(),
       href: tile.link_url || "/catalogo",
       type: "link",
     }));
-
-    const hasTournaments = tenantItems.some((item) => item.href === "/torneos");
-    if (!hasTournaments) {
+    if (!tenantItems.some((item) => item.href === "/torneos")) {
       tenantItems.push({ label: "TORNEOS", href: "/torneos", type: "link" });
     }
-
     return tenantItems;
   }
 
+  // 4. Generic fallback
   return DEFAULT_MENU_ITEMS;
 }
 
@@ -198,13 +235,16 @@ export default function Header() {
     ["rgba(0,0,0,0)", "rgba(0,0,0,0.08)"]
   );
 
-  useQuery({
+  const { data: categoriesRes } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
     staleTime: 10 * 60 * 1000,
   });
 
-  const menuItems: MenuItem[] = buildTenantMenuItems(tenant);
+  const categories: ProductCategory[] =
+    (categoriesRes?.data as { categories?: ProductCategory[] } | undefined)?.categories ?? [];
+
+  const menuItems: MenuItem[] = buildTenantMenuItems(tenant, categories);
 
   const promoText =
     tenant.config?.promo_bar_text ||

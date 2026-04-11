@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
 import { TenantProvider } from "@/context/TenantContext";
 import type { Tenant } from "@/lib/types/tenant";
 import { Toast } from "@heroui/react/toast";
@@ -22,13 +21,11 @@ export function Providers({ tenant, children }: { tenant: Tenant; children: Reac
   );
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <TenantProvider tenant={tenant}>
-          {children}
-          <Toast.Provider placement="top end" />
-        </TenantProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <TenantProvider tenant={tenant}>
+        {children}
+        <Toast.Provider placement="top end" />
+      </TenantProvider>
+    </QueryClientProvider>
   );
 }

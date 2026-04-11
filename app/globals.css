@@ -632,4 +632,7 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .rounded-card {
+    border-radius: var(--card-radius);
+  }
 }
