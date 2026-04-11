@@ -11,7 +11,9 @@ export default function TerminosContent() {
         <h1 className="section-title mb-6">Terminos de Uso</h1>
 
         {tenant.config?.terms_html ? (
-          <div className="prose prose-invert max-w-none"
+          <div
+            className="text-sm leading-relaxed space-y-4"
+            style={{ color: "color-mix(in srgb, var(--foreground) 80%, transparent)" }}
             dangerouslySetInnerHTML={{ __html: tenant.config.terms_html }}
           />
         ) : (

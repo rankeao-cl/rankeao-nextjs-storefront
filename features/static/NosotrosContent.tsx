@@ -17,9 +17,15 @@ export default function NosotrosContent() {
 
         <h1 className="section-title mb-6">Sobre {tenant.name}</h1>
 
-        {tenant.description ? (
-          <div className="prose prose-invert max-w-none">
-            <p className="text-foreground/80 whitespace-pre-wrap leading-relaxed">{tenant.description}</p>
+        {tenant.config?.about_html ? (
+          <div
+            className="prose prose-sm max-w-none leading-relaxed"
+            style={{ color: "color-mix(in srgb, var(--foreground) 80%, transparent)" }}
+            dangerouslySetInnerHTML={{ __html: tenant.config.about_html }}
+          />
+        ) : tenant.description ? (
+          <div>
+            <p className="whitespace-pre-wrap leading-relaxed text-sm" style={{ color: "color-mix(in srgb, var(--foreground) 80%, transparent)" }}>{tenant.description}</p>
           </div>
         ) : (
           <p className="text-muted">Informacion no disponible.</p>
