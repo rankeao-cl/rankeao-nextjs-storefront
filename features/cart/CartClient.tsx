@@ -29,7 +29,7 @@ export default function CartClient() {
   const cart = data?.data;
 
   const updateMutation = useMutation({
-    mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
+    mutationFn: ({ itemId, quantity }: { itemId: number; quantity: number }) =>
       updateCartItem(tenant.slug, itemId, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart", tenant.slug] });
@@ -37,7 +37,7 @@ export default function CartClient() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (itemId: string) => removeCartItem(tenant.slug, itemId),
+    mutationFn: (itemId: number) => removeCartItem(tenant.slug, itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart", tenant.slug] });
       toast.success("Producto eliminado");

@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiPost, apiDelete } from "./client";
 
 export type EntityType =
   | "user_profile"
@@ -30,10 +30,10 @@ export async function presignImage(
   contentType: string,
   entityId?: string
 ): Promise<PresignResponse> {
-  const raw = await apiFetch<{ success: boolean; data: PresignResponse }>("/images/presign", {
-    method: "POST",
-    body: { entity_type: entityType, content_type: contentType, entity_id: entityId ?? "" },
-  });
+  const raw = await apiPost<{ success: boolean; data: PresignResponse }>(
+    "/images/presign",
+    { entity_type: entityType, content_type: contentType, entity_id: entityId ?? "" },
+  );
   return raw.data;
 }
 
@@ -51,10 +51,10 @@ export async function confirmImage(
   entityType: EntityType,
   entityId?: string
 ): Promise<ImageRecord> {
-  const raw = await apiFetch<{ success: boolean; data: ImageRecord }>("/images/confirm", {
-    method: "POST",
-    body: { key, entity_type: entityType, entity_id: entityId ?? "" },
-  });
+  const raw = await apiPost<{ success: boolean; data: ImageRecord }>(
+    "/images/confirm",
+    { key, entity_type: entityType, entity_id: entityId ?? "" },
+  );
   return raw.data;
 }
 
@@ -70,5 +70,5 @@ export async function uploadImage(
 }
 
 export async function deleteImage(imageId: string): Promise<void> {
-  await apiFetch(`/images/${imageId}`, { method: "DELETE" });
+  await apiDelete(`/images/${imageId}`);
 }
