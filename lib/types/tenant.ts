@@ -53,12 +53,26 @@ export interface TenantSchedule {
   is_closed?: boolean;
 }
 
+export interface TenantHomeSections {
+  categories?: { title?: string; subtitle?: string };
+  featured?: { title?: string; subtitle?: string };
+  sale?: { title?: string; subtitle?: string };
+  new_arrivals?: { title?: string; subtitle?: string };
+  cta?: {
+    title?: string;
+    subtitle?: string;
+    catalog_button?: string;
+    whatsapp_button?: string;
+  };
+}
+
 export interface TenantStorefrontConfig {
   carousel_images?: CarouselSlide[];
   carousel_slides?: CarouselSlide[];
   category_tiles?: CategoryTile[];
   community_images?: CategoryTile[];
   menu_items?: TenantMenuItem[];
+  home_sections?: TenantHomeSections;
   whatsapp_number?: string;
   contact_email?: string;
   google_maps_url?: string;

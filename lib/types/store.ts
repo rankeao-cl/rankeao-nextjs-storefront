@@ -39,19 +39,23 @@ export interface Product {
 }
 
 export interface ProductImage {
+  id?: number;
   url: string;
-  thumbnail_url?: string;
   alt_text?: string;
-  position?: number;
+  sort_order?: number;
+  is_primary?: boolean;
 }
 
 export interface ProductVariant {
-  id: string;
+  /** Backend int64 — arrives as JSON number. Use String(id) only for React keys. */
+  id: number;
   name: string;
-  price?: number;
+  /** Price difference from the base product price (can be negative). Add to product.price to get final variant price. */
+  price_diff?: number;
   stock?: number;
   sku?: string;
-  attributes?: Record<string, string>;
+  image_url?: string;
+  is_active?: boolean;
 }
 
 export interface ProductsResponse {
@@ -67,25 +71,43 @@ export interface ProductCategory {
   children?: ProductCategory[];
 }
 
+/** Matches backend Cart DTO. */
 export interface Cart {
   tenant_slug: string;
   items: CartItem[];
+  item_count?: number;
   subtotal: number;
   discount: number;
   total: number;
+  currency?: string;
   coupon?: AppliedCoupon;
   warnings?: CartWarning[];
 }
 
+/**
+ * Matches backend CartItem DTO.
+ * NOTE: `price` is a normalized alias of the backend field `unit_price`,
+ * mapped by the API layer (normalizeCartPayload). Use `price` everywhere in UI.
+ */
 export interface CartItem {
-  id: string;
+  /** Backend int64 — arrives as JSON number; coerced to string in URL paths automatically. */
+  id: number;
   product_id: string;
-  variant_id?: string;
+  /** Backend *int64 optional. Must be sent as number to backend. */
+  variant_id?: number;
+  /** Normalized from backend `product_name` by API layer. */
   name: string;
   image_url?: string;
+  /** Normalized from backend `unit_price` by API layer. */
   price: number;
+  /** Raw unit_price from backend (kept for completeness). */
+  unit_price?: number;
+  total?: number;
   quantity: number;
+  in_stock?: boolean;
+  /** Normalized from backend `max_stock` by API layer. */
   stock?: number;
+  max_stock?: number;
 }
 
 export interface AppliedCoupon {
@@ -95,55 +117,88 @@ export interface AppliedCoupon {
 }
 
 export interface CartWarning {
-  type: "PRICE_CHANGED" | "OUT_OF_STOCK" | "LOW_STOCK";
-  item_id: string;
+  type: "PRICE_CHANGED" | "OUT_OF_STOCK" | "LOW_STOCK" | "PRODUCT_UNAVAILABLE";
+  /** Backend int64 — arrives as JSON number. */
+  item_id: number;
   message: string;
 }
 
+/** Matches backend CheckoutRequest DTO exactly. */
 export interface StoreCheckoutRequest {
   delivery_method: "SHIPPING" | "PICKUP" | "IN_PERSON";
   payment_method: "WEBPAY" | "MERCADOPAGO" | "TRANSFER";
+  buyer_notes?: string;
+  meetup_location?: string;
+  meetup_date?: string;
   shipping_address?: {
     name: string;
-    // Backend contract currently requires `address`.
-    // `address_line_1` is kept optional for forward/backward compatibility.
+    phone: string;
+    /** Maps to backend ShippingAddress.Address (required when delivery_method=SHIPPING). */
     address: string;
-    address_line_1?: string;
-    address_line_2?: string;
     city: string;
     region: string;
     postal_code?: string;
     country: string;
-    phone: string;
   };
 }
 
+/**
+ * Buyer-facing order. Covers both OrderListItem (abbreviated) and Order / OrderDetail.
+ * Fields present only in the detail view are marked optional.
+ * `items` is only populated in the detail view, not in the list.
+ */
 export interface StoreOrder {
   id: string;
-  order_number?: string;
-  tenant_id?: string;
-  tenant_name?: string;
+  order_number: string;
+  order_type?: string;
   status: string;
-  items: StoreOrderItem[];
-  subtotal: number;
+  /** Only present in full Order/OrderDetail — not in OrderListItem. */
+  subtotal?: number;
   discount: number;
   shipping_cost?: number;
   total: number;
-  payment_method?: string;
+  currency?: string;
   delivery_method?: string;
-  tracking_number?: string;
-  tracking_url?: string;
-  shipping_address?: Record<string, string>;
+  delivery_notes?: string;
+  item_summary?: string;
+  buyer_notes?: string;
+  tenant_name?: string;
+  coupon_code?: string;
+  coupon_discount?: number;
   created_at?: string;
   updated_at?: string;
+  paid_at?: string;
+  shipped_at?: string;
+  delivered_at?: string;
+  completed_at?: string;
+  cancelled_at?: string;
+  // Detail-only sub-resources
+  items?: StoreOrderItem[];
+  shipment?: StoreShipmentInfo;
 }
 
 export interface StoreOrderItem {
+  id?: number;
   product_id: string;
   product_name: string;
-  variant_id?: string;
-  variant_name?: string;
-  price: number;
+  product_sku?: string;
+  product_image_url?: string;
+  variant_id?: number;
   quantity: number;
-  image_url?: string;
+  unit_price: number;
+  total: number;
+}
+
+export interface StoreShipmentInfo {
+  id?: string;
+  carrier: string;
+  carrier_name?: string;
+  tracking_number?: string;
+  tracking_url?: string;
+  status?: string;
+  estimated_delivery?: string;
+  in_transit_at?: string;
+  picked_up_at?: string;
+  delivered_at?: string;
+  notes?: string;
 }

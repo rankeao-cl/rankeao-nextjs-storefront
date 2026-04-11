@@ -125,6 +125,51 @@ export interface TournamentDetail extends Omit<TournamentListItem, "distance_km"
   parent_tournaments: TournamentListItem[];
 }
 
+export interface Match {
+  id: string;
+  round_number: number;
+  player1_id: string;
+  player2_id?: string;
+  player1_name: string;
+  player2_name?: string;
+  winner_id?: string;
+  player1_wins: number;
+  player2_wins: number;
+  player1_draws: number;
+  status: string;
+  table_number?: number;
+  reported_at?: string;
+  is_bye: boolean;
+}
+
+export interface Standing {
+  position: number;
+  user_id: string;
+  username: string;
+  match_points: number;
+  game_wins: number;
+  game_losses: number;
+  game_draws: number;
+  gwp_pct: number;
+  omw_pct: number;
+  ogw_pct: number;
+  dropped: boolean;
+}
+
+export interface BracketNode {
+  match_id: string;
+  round: number;
+  bracket_position: number;
+  player1_name?: string;
+  player2_name?: string;
+  winner_name?: string;
+}
+
+export interface RegistrationResult {
+  message?: string;
+  registration?: Registration;
+}
+
 export interface TournamentListFilters {
   status?: string;
   game?: string;
