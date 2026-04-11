@@ -19,6 +19,8 @@ export default function HomeClient() {
 
   const carousel = tenant.config?.carousel_slides || tenant.config?.carousel_images || [];
   const tiles = tenant.config?.category_tiles || [];
+  const sections = tenant.config?.home_sections;
+  const whatsappNum = tenant.config?.whatsapp_number ?? tenant.phone;
 
   const { data: featuredData } = useQuery({
     queryKey: ["products-featured", tenant.slug],
@@ -61,9 +63,9 @@ export default function HomeClient() {
         <section className="apple-section">
           <div className="store-container">
             <FadeUp className="text-center mb-14">
-              <h2 className="section-title">Explora por categoria</h2>
+              <h2 className="section-title">{sections?.categories?.title ?? "Explora por categoria"}</h2>
               <p className="section-subtitle mx-auto mt-3">
-                Encuentra lo que buscas facilmente
+                {sections?.categories?.subtitle ?? "Encuentra lo que buscas facilmente"}
               </p>
             </FadeUp>
 
@@ -85,8 +87,8 @@ export default function HomeClient() {
         <section className="apple-section" style={{ background: "var(--surface-solid)" }}>
           <div className="store-container">
             <ProductCarousel
-              title="Los mas populares"
-              subtitle="Los productos favoritos de nuestros clientes"
+              title={sections?.featured?.title ?? "Los mas populares"}
+              subtitle={sections?.featured?.subtitle ?? "Los productos favoritos de nuestros clientes"}
               products={featured}
               onAddToCart={handleAddToCart}
               viewAllLink="/catalogo?sort=popular"
@@ -100,8 +102,8 @@ export default function HomeClient() {
         <section className="apple-section">
           <div className="store-container">
             <ProductCarousel
-              title="Ofertas destacadas"
-              subtitle="Los mejores descuentos que no te puedes perder"
+              title={sections?.sale?.title ?? "Ofertas destacadas"}
+              subtitle={sections?.sale?.subtitle ?? "Los mejores descuentos que no te puedes perder"}
               products={saleProducts}
               onAddToCart={handleAddToCart}
               viewAllLink="/catalogo?on_sale=true"
@@ -115,8 +117,8 @@ export default function HomeClient() {
         <section className="apple-section" style={{ background: "var(--surface-solid)" }}>
           <div className="store-container">
             <ProductCarousel
-              title="Recien llegados"
-              subtitle="Lo ultimo que agregamos a nuestro catalogo"
+              title={sections?.new_arrivals?.title ?? "Recien llegados"}
+              subtitle={sections?.new_arrivals?.subtitle ?? "Lo ultimo que agregamos a nuestro catalogo"}
               products={newProducts}
               onAddToCart={handleAddToCart}
               viewAllLink="/catalogo?sort=recent"
@@ -136,23 +138,23 @@ export default function HomeClient() {
             className="text-center max-w-2xl mx-auto"
           >
             <h2 className="section-title mb-4">
-              ¿No encuentras lo que buscas?
+              {sections?.cta?.title ?? "¿No encuentras lo que buscas?"}
             </h2>
             <p className="section-subtitle mx-auto mb-8">
-              Explora nuestro catalogo completo o contactanos para pedidos especiales
+              {sections?.cta?.subtitle ?? "Explora nuestro catalogo completo o contactanos para pedidos especiales"}
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <a href="/catalogo" className="btn-primary">
-                Ver catalogo completo
+                {sections?.cta?.catalog_button ?? "Ver catalogo completo"}
               </a>
-              {tenant.phone && (
+              {whatsappNum && (
                 <a
-                  href={`https://wa.me/${tenant.phone.replace(/[^0-9]/g, "")}`}
+                  href={`https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-secondary"
                 >
-                  Contactar por WhatsApp
+                  {sections?.cta?.whatsapp_button ?? "Contactar por WhatsApp"}
                 </a>
               )}
             </div>

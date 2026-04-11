@@ -53,14 +53,14 @@ export default function Footer() {
           {/* Column 1 — Brand & Description & Socials */}
           <div className="flex flex-col max-w-[280px]">
             <Image
-              src={tenant.logo_url || "/assets/logos/LogoSuperior.png"}
+              src={tenant.config?.footer_logo_url || tenant.logo_url || "/assets/logos/LogoSuperior.png"}
               alt={tenant.name}
               width={100}
               height={40}
               className="h-10 w-auto object-contain mb-5"
             />
             <p className="text-xs leading-relaxed text-white font-medium mb-6">
-              {tenant.description || `Tienda de Juegos de Cartas Coleccionables, Juegos de Mesa y Figuras de Anime. Envíos a todo Chile.`}
+              {tenant.description || `Tu tienda de confianza. Envíos a todo Chile.`}
             </p>
             
             {showSocial && (
@@ -146,13 +146,13 @@ export default function Footer() {
               Contáctanos
             </h3>
             <ul className="space-y-4">
-              {tenant.email && (
+              {(tenant.config?.contact_email || tenant.email) && (
                 <li className="flex items-start gap-2.5 group">
                   <svg className="w-4 h-4 shrink-0 text-white mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                   </svg>
-                  <a href={`mailto:${tenant.email}`} className="text-xs font-medium text-white group-hover:text-[#0ea5e9] transition-colors break-all">
-                    {tenant.email}
+                  <a href={`mailto:${tenant.config?.contact_email || tenant.email}`} className="text-xs font-medium text-white group-hover:text-[#0ea5e9] transition-colors break-all">
+                    {tenant.config?.contact_email || tenant.email}
                   </a>
                 </li>
               )}
@@ -181,17 +181,6 @@ export default function Footer() {
                   </div>
                 </li>
               )}
-              {schedule.length === 0 && (
-                <li className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 shrink-0 text-white mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="flex flex-col text-xs font-medium text-white space-y-1">
-                    <span>Lun a Sáb: 11:00 a 20:30hrs</span>
-                    <span>Dom: Cerrado</span>
-                  </div>
-                </li>
-              )}
             </ul>
           </div>
         </div>
@@ -199,8 +188,8 @@ export default function Footer() {
         {/* Custom Webpay / Footer logos section */}
         <div className="mt-16 flex flex-col items-center justify-center">
           <Image
-            src="/pago_webpay_w.png"
-            alt="Webpay Plus"
+            src={tenant.config?.payment_methods_image || "/pago_webpay_w.png"}
+            alt="Métodos de pago"
             width={120}
             height={40}
             className="h-10 w-auto object-contain mb-6 opacity-80"

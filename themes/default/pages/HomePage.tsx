@@ -19,6 +19,8 @@ export function HomePage({ tenant: serverTenant }: { tenant?: Tenant }) {
   const increment = useCartStore((s) => s.increment);
 
   const carousel = tenant?.config?.carousel_slides || tenant?.config?.carousel_images || [];
+  const sections = tenant?.config?.home_sections;
+  const whatsappNum = tenant?.config?.whatsapp_number ?? tenant?.phone;
 
   const { data: featuredData } = useQuery({
     queryKey: ["products-featured", tenant?.slug],
@@ -60,10 +62,10 @@ export function HomePage({ tenant: serverTenant }: { tenant?: Tenant }) {
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                  Los Más Populares
+                  {sections?.featured?.title ?? "Los Más Populares"}
                 </h2>
                 <p className="text-sm text-white/40 mt-1">
-                  Los productos favoritos de nuestros clientes
+                  {sections?.featured?.subtitle ?? "Los productos favoritos de nuestros clientes"}
                 </p>
               </div>
               <Link 
@@ -105,10 +107,10 @@ export function HomePage({ tenant: serverTenant }: { tenant?: Tenant }) {
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                  Recién Llegados
+                  {sections?.new_arrivals?.title ?? "Recién Llegados"}
                 </h2>
                 <p className="text-sm text-white/40 mt-1">
-                  Lo último que agregamos al catálogo
+                  {sections?.new_arrivals?.subtitle ?? "Lo último que agregamos al catálogo"}
                 </p>
               </div>
               <Link 
@@ -145,26 +147,26 @@ export function HomePage({ tenant: serverTenant }: { tenant?: Tenant }) {
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
             <div className="relative">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                ¿No encuentras lo que buscas?
+                {sections?.cta?.title ?? "¿No encuentras lo que buscas?"}
               </h2>
               <p className="text-white/50 text-sm md:text-base max-w-lg mx-auto mb-8">
-                Explora nuestro catálogo completo o contáctanos para pedidos especiales
+                {sections?.cta?.subtitle ?? "Explora nuestro catálogo completo o contáctanos para pedidos especiales"}
               </p>
               <div className="flex flex-wrap gap-3 justify-center">
-                <Link 
-                  href="/catalogo" 
+                <Link
+                  href="/catalogo"
                   className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-blue-500 text-white text-sm font-semibold hover:from-violet-500 hover:to-blue-400 transition-all shadow-lg shadow-violet-500/25"
                 >
-                  Ver catálogo completo
+                  {sections?.cta?.catalog_button ?? "Ver catálogo completo"}
                 </Link>
-                {tenant?.phone && (
+                {whatsappNum && (
                   <a
-                    href={`https://wa.me/${tenant.phone.replace(/[^0-9]/g, "")}`}
+                    href={`https://wa.me/${whatsappNum.replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-6 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm font-semibold hover:bg-white/10 transition-all"
                   >
-                    Contactar por WhatsApp
+                    {sections?.cta?.whatsapp_button ?? "Contactar por WhatsApp"}
                   </a>
                 )}
               </div>

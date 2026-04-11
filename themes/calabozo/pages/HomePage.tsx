@@ -19,6 +19,7 @@ export function HomePage({ tenant: serverTenant }: { tenant?: any }) {
   const increment = useCartStore((s) => s.increment);
 
   const carousel = tenant?.config?.carousel_slides || tenant?.config?.carousel_images || [];
+  const sections = tenant?.config?.home_sections;
 
   const { data: featuredData } = useQuery({
     queryKey: ["products-featured", tenant?.slug],
@@ -75,7 +76,7 @@ export function HomePage({ tenant: serverTenant }: { tenant?: any }) {
             {/* Featured Products */}
             {featured.length > 0 && (
               <CalabozoProductCarousel
-                title="Destacados"
+                title={sections?.featured?.title ?? "Destacados"}
                 products={featured}
                 onAddToCart={handleAddToCart}
                 viewAllLink="/catalogo?sort=popular"
@@ -85,7 +86,7 @@ export function HomePage({ tenant: serverTenant }: { tenant?: any }) {
             {/* New Products */}
             {newProducts.length > 0 && (
               <CalabozoProductCarousel
-                title="Nuevos Arribos"
+                title={sections?.new_arrivals?.title ?? "Nuevos Arribos"}
                 products={newProducts}
                 onAddToCart={handleAddToCart}
                 viewAllLink="/catalogo?sort=recent"
