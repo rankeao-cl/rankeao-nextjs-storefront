@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCartStore } from "@/lib/stores/cart-store";
 import Link from "next/link";
-import { Person, ArrowRightFromSquare, ShoppingCart, Magnifier } from "@gravity-ui/icons";
+import { Person, ArrowRightFromSquare, ShoppingCart, Magnifier, Gear, ArrowRotateLeft } from "@gravity-ui/icons";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default function CuentaPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function CuentaPage() {
   return (
     <div className="store-container py-12">
       <div className="max-w-lg mx-auto">
+        <Breadcrumb items={[{ label: "Inicio", href: "/" }, { label: "Mi cuenta" }]} />
         <h1 className="section-title mb-8 text-center">Mi cuenta</h1>
 
         <div className="surface-card p-6 mb-6">
@@ -60,6 +62,28 @@ export default function CuentaPage() {
               <div>
                 <p className="font-medium text-foreground text-sm">Mi carrito</p>
                 <p className="text-xs text-muted">Ver productos en tu carrito</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/cuenta/pedidos"
+              className="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-[var(--surface)] transition-colors"
+            >
+              <ArrowRotateLeft className="w-5 h-5 text-muted" />
+              <div>
+                <p className="font-medium text-foreground text-sm">Mis pedidos</p>
+                <p className="text-xs text-muted">Historial de compras y seguimiento</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/cuenta/cambiar-contrasena"
+              className="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-[var(--surface)] transition-colors"
+            >
+              <Gear className="w-5 h-5 text-muted" />
+              <div>
+                <p className="font-medium text-foreground text-sm">Cambiar contraseña</p>
+                <p className="text-xs text-muted">Actualiza tu contraseña de acceso</p>
               </div>
             </Link>
           </div>

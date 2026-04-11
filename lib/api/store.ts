@@ -36,10 +36,13 @@ type CartItemWithLegacyFields = Cart["items"][number] & {
   product_name?: string;
   unit_price?: number;
   max_stock?: number;
+  /** Backend also sends id as number. */
+  id: number;
 };
 
 type CartWithLegacyFields = Omit<Cart, "items"> & {
   items?: CartItemWithLegacyFields[];
+  item_count?: number;
 };
 
 function hasEmbeddedProduct(
@@ -77,14 +80,18 @@ function hasEmbeddedCart(
 function normalizeCartPayload(cart: CartWithLegacyFields): Cart {
   const items = (cart.items ?? []).map((item) => ({
     ...item,
+    id: item.id,
     name: item.name ?? item.product_name ?? "",
     price: item.price ?? item.unit_price ?? 0,
+    unit_price: item.unit_price ?? item.price ?? 0,
     stock: item.stock ?? item.max_stock,
+    max_stock: item.max_stock ?? item.stock,
   }));
 
   return {
     ...cart,
     items,
+    item_count: cart.item_count ?? items.length,
     subtotal: cart.subtotal ?? 0,
     discount: cart.discount ?? 0,
     total: cart.total ?? 0,
@@ -198,21 +205,21 @@ export async function addCartItem(
   tenantSlug: string,
   productId: string,
   quantity: number = 1,
-  variantId?: string,
+  variantId?: number,
 ) {
   return apiPost<ApiResponse<Cart>>(
     `/store/${encodeURIComponent(tenantSlug)}/cart/items`,
     {
       product_id: productId,
       quantity,
-      ...(variantId ? { variant_id: variantId } : {}),
+      ...(variantId !== undefined ? { variant_id: variantId } : {}),
     },
   );
 }
 
 export async function updateCartItem(
   tenantSlug: string,
-  itemId: string,
+  itemId: number,
   quantity: number,
 ) {
   return apiPatch<ApiResponse<Cart>>(
@@ -221,7 +228,7 @@ export async function updateCartItem(
   );
 }
 
-export async function removeCartItem(tenantSlug: string, itemId: string) {
+export async function removeCartItem(tenantSlug: string, itemId: number) {
   return apiDelete<ApiResponse<ApiMessage>>(
     `/store/${encodeURIComponent(tenantSlug)}/cart/items/${itemId}`,
   );
@@ -254,7 +261,7 @@ export async function createCheckout(
   tenantSlug: string,
   payload: StoreCheckoutRequest,
 ) {
-  return apiPost<ApiResponse<{ order: StoreOrder }>>(
+  return apiPost<ApiResponse<{ order: StoreOrder; payment_url?: string }>>(
     `/store/${encodeURIComponent(tenantSlug)}/checkout`,
     payload,
   );
@@ -286,5 +293,37 @@ export async function getOrderByTracking(
     `/store/${encodeURIComponent(tenantSlug)}/orders/track`,
     { order_number: orderNumber },
     { cache: "no-store" },
+  );
+}
+
+export async function confirmDelivery(orderId: string) {
+  return apiPost<ApiResponse<{ order: StoreOrder }>>(
+    `/store/orders/${encodeURIComponent(orderId)}/confirm-delivery`,
+    {},
+  );
+}
+
+export async function cancelOrder(orderId: string) {
+  return apiPost<ApiResponse<{ order: StoreOrder }>>(
+    `/store/orders/${encodeURIComponent(orderId)}/cancel`,
+    {},
+  );
+}
+
+export async function reviewOrder(
+  orderId: string,
+  payload: {
+    overall_rating: number;
+    condition_accuracy?: number;
+    shipping_speed?: number;
+    communication?: number;
+    packaging?: number;
+    comment?: string;
+    is_anonymous?: boolean;
+  },
+) {
+  return apiPost<ApiResponse<unknown>>(
+    `/store/orders/${encodeURIComponent(orderId)}/review`,
+    payload,
   );
 }

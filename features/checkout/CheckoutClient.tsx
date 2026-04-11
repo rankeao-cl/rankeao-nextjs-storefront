@@ -72,17 +72,19 @@ export default function CheckoutClient() {
   const setItemCount = useCartStore((s) => s.setItemCount);
   const authenticated = isAuthenticated();
 
+  const username = useAuthStore((s) => s.username);
   const [deliveryMethod, setDeliveryMethod] = useState<"PICKUP" | "SHIPPING">("PICKUP");
   const [paymentMethod, setPaymentMethod] = useState<"TRANSFER" | "WEBPAY" | "MERCADOPAGO">("TRANSFER");
   const [address, setAddress] = useState({
     name: "",
-    address_line_1: "",
+    address: "",
     city: "",
     region: "",
     postal_code: "",
     country: "CL",
     phone: "",
   });
+  const [buyerNotes, setBuyerNotes] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [acceptTerms, setAcceptTerms] = useState(false);
 
@@ -114,9 +116,17 @@ export default function CheckoutClient() {
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["cart", tenant.slug] });
       setItemCount(0);
-      toast.success("Pedido creado exitosamente");
-      const orderId = res?.data?.order?.id;
-      router.push(orderId ? `/tracking?order=${orderId}` : "/");
+      // If the payment provider returned a redirect URL (Webpay / MercadoPago), follow it.
+      // Otherwise, go to the buyer orders page.
+      const paymentUrl = (res?.data as { payment_url?: string })?.payment_url;
+      const orderNumber = res?.data?.order?.order_number;
+      if (paymentUrl) {
+        toast.success("Redirigiendo al pago...");
+        window.location.href = paymentUrl;
+      } else {
+        toast.success("Pedido creado exitosamente");
+        router.push(orderNumber ? `/tracking?order=${orderNumber}` : "/cuenta/pedidos");
+      }
     },
     onError: () => {
       toast.danger("Error al crear el pedido. Intenta nuevamente.");
@@ -129,7 +139,7 @@ export default function CheckoutClient() {
     if (deliveryMethod === "SHIPPING") {
       if (!address.name || address.name.length < 3)
         errs.name = "Nombre requerido (min 3 caracteres)";
-      if (!address.address_line_1 || address.address_line_1.length < 5)
+      if (!address.address || address.address.length < 5)
         errs.address = "Direccion requerida";
       if (!address.city) errs.city = "Ciudad requerida";
       if (!address.region) errs.region = "Region requerida";
@@ -153,8 +163,7 @@ export default function CheckoutClient() {
         ? {
             name: address.name.trim(),
             phone: address.phone.replace(/\s/g, ""),
-            address: address.address_line_1.trim(),
-            address_line_1: address.address_line_1.trim(),
+            address: address.address.trim(),
             city: address.city.trim(),
             region: address.region.trim(),
             postal_code: address.postal_code?.trim() || undefined,
@@ -165,6 +174,7 @@ export default function CheckoutClient() {
     const payload: StoreCheckoutRequest = {
       delivery_method: deliveryMethod,
       payment_method: paymentMethod,
+      ...(buyerNotes.trim() ? { buyer_notes: buyerNotes.trim() } : {}),
       ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
     };
     checkoutMutation.mutate(payload);
@@ -206,7 +216,12 @@ export default function CheckoutClient() {
   return (
     <div className="store-container py-8 md:py-12">
       <FadeUp>
-        <h1 className="section-title mb-6">Finalizar compra</h1>
+        <h1 className="section-title mb-2">Finalizar compra</h1>
+        {username && (
+          <p className="text-sm text-muted mb-6">
+            Comprando como <span className="font-bold" style={{ color: "var(--store-primary)" }}>@{username}</span>
+          </p>
+        )}
       </FadeUp>
 
       {/* Progress steps */}
@@ -355,8 +370,8 @@ export default function CheckoutClient() {
                 <div className="sm:col-span-2">
                   <input
                     placeholder="Direccion"
-                    value={address.address_line_1}
-                    onChange={(e) => setAddress({ ...address, address_line_1: e.target.value })}
+                    value={address.address}
+                    onChange={(e) => setAddress({ ...address, address: e.target.value })}
                     autoComplete="street-address"
                     className={fieldClass("address")}
                     style={{ background: "var(--field-background)", color: "var(--foreground)" }}
@@ -445,6 +460,27 @@ export default function CheckoutClient() {
                 </label>
               ))}
             </div>
+          </motion.div>
+
+          {/* Buyer Notes */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.22 }}
+            className="rounded-2xl p-5 md:p-6"
+            style={{ background: "var(--surface-solid)", boxShadow: "var(--shadow-card)" }}
+          >
+            <h2 className="font-bold text-base mb-3" style={{ color: "var(--foreground)" }}>
+              Notas para el vendedor
+            </h2>
+            <textarea
+              value={buyerNotes}
+              onChange={(e) => setBuyerNotes(e.target.value)}
+              placeholder="Instrucciones especiales, horario de entrega, etc. (opcional)"
+              rows={3}
+              className="w-full text-sm rounded-xl px-4 py-3 focus:outline-none transition-all border border-transparent resize-none"
+              style={{ background: "var(--field-background)", color: "var(--foreground)" }}
+            />
           </motion.div>
 
           {/* Terms */}
